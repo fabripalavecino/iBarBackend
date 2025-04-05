@@ -5,15 +5,18 @@ import {
     getBarsController,
     getBarByIdController,
     updateBarController,
-    deleteBarController
+    deleteBarController,
+    createBarManagerController
 } from "../controllers/barController";
+import { authorizeBusinessOwnership } from "../middlewares/authorizeBusinessOwnership";
 
 const router = express.Router();
 
-router.post("/", authenticateToken, createBarController); 
-router.get("/", authenticateToken, getBarsController); 
-router.get("/:id", authenticateToken, getBarByIdController); 
-router.put("/:id", authenticateToken, updateBarController); 
-router.delete("/:id", authenticateToken, deleteBarController); 
+router.post("/", authenticateToken, authorizeBusinessOwnership, createBarController);
+router.get("/", authenticateToken, authorizeBusinessOwnership, getBarsController);
+router.get("/:id", authenticateToken, authorizeBusinessOwnership, getBarByIdController);
+router.put("/:id", authenticateToken, authorizeBusinessOwnership, updateBarController);
+router.delete("/:id", authenticateToken, authorizeBusinessOwnership, deleteBarController);
+router.post("/:barID/manager", authenticateToken, authorizeBusinessOwnership, createBarManagerController);
 
 export default router;

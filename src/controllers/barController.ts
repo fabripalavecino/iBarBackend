@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { mapErrorMsg } from "../utils/mapErrorMsg";
-import { createBar, getBars, getBarById, updateBar, deleteBar } from "../services/barService";
+import { createBar, getBars, getBarById, updateBar, deleteBar, createBarManager } from "../services/barService";
 import { BarRequest } from "../types/bar.types";
 
 export const createBarController = async (req: Request, res: Response): Promise<void> => {
@@ -12,6 +12,9 @@ export const createBarController = async (req: Request, res: Response): Promise<
             return;
         }
 
+        const userId = req.user?.id;
+        if(!userId) throw new Error('UserId not found');
+
         const data: BarRequest = req.body;
 
         if (!data.barLogo) {
@@ -19,7 +22,7 @@ export const createBarController = async (req: Request, res: Response): Promise<
             return;
         }
 
-        const response = await createBar(data);
+        const response = await createBar(data, userId);
         res.status(201).json(response);
     } catch (error) {
         const mappedError = mapErrorMsg((msg) => `Error creating bar: ${msg}`, error);
@@ -97,3 +100,32 @@ export const deleteBarController = async (req: Request, res: Response): Promise<
         res.status(500).json({ message: mappedError instanceof Error ? mappedError.message : "Internal Server Error" });
     }
 };
+
+export const createBarManagerController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { barID } = req.params;
+
+        if (!barID) {
+            res.status(400).json({ message: "Missing barID in URL params" });
+            return;
+        }
+
+        const { first, last, email, phoneNumber, password } = req.body;
+
+        const newUser = await createBarManager({
+            first,
+            last,
+            email,
+            phoneNumber,
+            password,
+            barID
+        });
+
+        res.status(201).json({ message: "Bar Manager created", user: newUser });
+    } catch (err: unknown) {
+        const mappedError = mapErrorMsg((msg) => `Error deleting bar: ${msg}`, err);
+        console.error(mappedError);
+        res.status(500).json({ message: mappedError instanceof Error ? mappedError.message : "Internal Server Error" });
+    }
+};
+

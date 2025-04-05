@@ -1,29 +1,35 @@
 import Bar from "../models/Bar";
 import { BarRequest, IBar } from "../types/bar.types";
+import Business from "../models/Business";
+import User, { IUser } from "../models/User";
 
-// ✅ Ensure drinksList is optional and barLogo is required
-export const createBar = async (data: BarRequest): Promise<IBar> => {
-    if (!data.barLogo) {
-        throw new Error("barLogo is required.");
+export const createBar = async (data: BarRequest, userId: string): Promise<IBar> => {
+    if (!data.name || !data.barLogo) {
+        throw new Error("Both 'name' and 'barLogo' are required.");
+    }
+
+    const business = await Business.findOne({ _id: data.businessID, owner_id: userId });
+    if (!business) {
+        throw new Error("Invalid business ID or unauthorized access to business.");
     }
 
     const newBar = new Bar({
+        name: data.name,
         businessID: data.businessID,
         barLogo: data.barLogo,
-        drinksList: [], // ✅ Always initialize as empty
+        drinksList: [],
         isDeleted: false,
     });
 
     return await newBar.save();
 };
 
-// ✅ Fetch bars with pagination & search (excluding soft-deleted bars)
 export const getBars = async ({ page, limit, search }: { page: number; limit: number; search: string }) => {
     const query = { isDeleted: false } as any;
 
     if (search) {
         query.$or = [
-            { name: { $regex: search, $options: "i" } }, // Assuming `name` exists in Bar
+            { name: { $regex: search, $options: "i" } },
         ];
     }
 
@@ -36,26 +42,58 @@ export const getBars = async ({ page, limit, search }: { page: number; limit: nu
     return { bars, total, page, limit };
 };
 
-// ✅ Fetch a bar by ID, ensuring it exists
 export const getBarById = async (id: string): Promise<IBar | null> => {
-    return await Bar.findById(id).populate("drinksList"); // ✅ Populate drinksList with Item details
+    return await Bar.findById(id).populate("drinksList");
 };
 
-// ✅ Update a bar (excluding drinksList updates)
 export const updateBar = async (id: string, data: Partial<BarRequest>): Promise<IBar | null> => {
     return await Bar.findByIdAndUpdate(id, data, { new: true });
 };
 
-// ✅ Soft delete by updating `isDeleted`
 export const deleteBar = async (id: string): Promise<void> => {
     await Bar.findByIdAndUpdate(id, { isDeleted: true });
 };
 
-// ✅ New function to add items to drinksList
 export const addItemToBar = async (barId: string, itemId: string): Promise<IBar | null> => {
     return await Bar.findByIdAndUpdate(
         barId,
         { $push: { drinksList: itemId } },
         { new: true }
-    ).populate("drinksList"); // ✅ Ensure drinksList is updated with actual Item data
+    ).populate("drinksList");
 };
+
+export const createBarManager = async ({
+    first,
+    last,
+    email,
+    phoneNumber,
+    password,
+    barID
+}: {
+    first: string;
+    last: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+    barID: string;
+}): Promise<IUser> => {
+    const bar = await Bar.findById(barID);
+    if (!bar) throw new Error("Bar not found");
+
+    const existingManager = await User.findOne({ barID: bar._id, userType: "barManager" });
+    if (existingManager) throw new Error("This bar already has a manager");
+
+    const newUser = new User({
+        first,
+        last,
+        email,
+        phoneNumber,
+        password,
+        userType: "barManager",
+        businessID: bar.businessID,
+        barID: bar._id
+    });
+
+    return await newUser.save();
+};
+

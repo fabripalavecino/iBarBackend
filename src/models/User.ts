@@ -29,7 +29,6 @@ const UserSchema = new Schema<IUser>({
     lockUntil: { type: Date, default: null }
 });
 
-// Hash password before saving
 UserSchema.pre("save", function (next) {
     if (!this.isModified("password")) return next();
 
@@ -38,12 +37,10 @@ UserSchema.pre("save", function (next) {
     next();
 });
 
-// Compare hashed passwords
 UserSchema.methods.comparePassword = async function (candidatePassword: string) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Track failed login attempts
 UserSchema.methods.incrementFailedLoginAttempts = async function () {
     this.failedLoginAttempts += 1;
 
@@ -54,7 +51,7 @@ UserSchema.methods.incrementFailedLoginAttempts = async function () {
     await this.save();
 };
 
-// Reset failed attempts on successful login
+
 UserSchema.methods.resetFailedLoginAttempts = async function () {
     this.failedLoginAttempts = 0;
     this.lockUntil = null;

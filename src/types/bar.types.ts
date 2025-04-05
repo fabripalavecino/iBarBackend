@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IBar extends mongoose.Document {
+    name: string;
     businessID: mongoose.Types.ObjectId;
     barLogo: string;
     drinksList: mongoose.Types.ObjectId[];
@@ -11,7 +12,8 @@ export interface IBar extends mongoose.Document {
 
 
 export interface BarRequest {
-    businessID: string; // Expecting a string ID in API requests
-    barLogo?: string;
-    drinksList?: string[]; // Expecting an array of string IDs in API requests
+    name: string;
+    businessID: string;
+    barLogo: string;
+    drinksList?: string[]; 
 }

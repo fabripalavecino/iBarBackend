@@ -14,7 +14,6 @@ import { sendPasswordResetEmail } from "./emailService";
 import PasswordResetToken from "../models/PasswordResetToken";
 import { randomBytes } from "crypto";
 
-// 🔹 Register a new user with a transaction
 export const registerUser = async (data: RegisterRequest) => {
   const {
     first,
@@ -63,7 +62,7 @@ export const registerUser = async (data: RegisterRequest) => {
     session.endSession();
 
     return {
-      token: generateToken(user._id.toString(), business._id.toString()),
+      token: generateToken(user._id.toString(), user.email, 'barOwner', business._id.toString()),
       user: formatUserResponse(user),
     };
   } catch (error) {
@@ -93,7 +92,7 @@ export const loginUser = async (data: LoginRequest) => {
   await user.resetFailedLoginAttempts();
 
   return {
-    token: generateToken(user._id.toString(), user.businessID.toString()),
+    token: generateToken(user._id.toString(),user.email, 'barOwner', user.businessID.toString()),
     user: formatUserResponse(user),
   };
 };
@@ -137,7 +136,7 @@ export const resetPassword = async ({
   await PasswordResetToken.deleteOne({ _id: resetRecord._id });
 };
 
-// 🔹 Helper Functions
+//  Helper Functions
 
 const findUserByEmail = async (email: string): Promise<IUser> => {
   const user = await User.findOne({ email });
