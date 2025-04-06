@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/authRoutes";
+import barRoutes from "./routes/barRoutes";
 
 const app = express();
 
@@ -14,5 +15,6 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })); // Rate limiting
 
 // 🔹 Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/bars", barRoutes);
 
 export default app;

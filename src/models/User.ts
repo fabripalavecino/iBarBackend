@@ -10,6 +10,7 @@ export interface IUser extends Document {
     password: string;
     userType: "barOwner" | "barManager";
     businessID: mongoose.Types.ObjectId;
+    barID?: mongoose.Types.ObjectId;
     failedLoginAttempts: number;
     lockUntil: Date | null;
     comparePassword(candidatePassword: string): Promise<boolean>;
@@ -25,9 +26,17 @@ const UserSchema = new Schema<IUser>({
     password: { type: String, required: true },
     userType: { type: String, enum: ["barOwner", "barManager"], required: true },
     businessID: { type: Schema.Types.ObjectId, ref: "Business", required: true },
+    barID: {
+        type: Schema.Types.ObjectId,
+        ref: "Bar",
+        required: function () {
+            return this.userType === "barManager";
+        }
+    },
     failedLoginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null }
 });
+
 
 UserSchema.pre("save", function (next) {
     if (!this.isModified("password")) return next();
@@ -57,5 +66,13 @@ UserSchema.methods.resetFailedLoginAttempts = async function () {
     this.lockUntil = null;
     await this.save();
 };
+
+UserSchema.index(
+    { barID: 1 },
+    {
+        unique: true,
+        partialFilterExpression: { userType: "barManager" }
+    }
+);
 
 export default mongoose.model<IUser>("User", UserSchema);

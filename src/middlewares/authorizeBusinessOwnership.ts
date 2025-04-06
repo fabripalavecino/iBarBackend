@@ -17,7 +17,7 @@ export const authorizeBusinessOwnership = async (req: Request, res: Response, ne
             return;
         }
 
-        const businessIdFromRequest = req.body.businessID;
+        const businessIdFromRequest = req.user?.businessID;
 
         if (!businessIdFromRequest || user.businessID.toString() !== businessIdFromRequest) {
             res.status(403).json({ message: "Forbidden: You do not own this business" });

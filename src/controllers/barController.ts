@@ -123,7 +123,7 @@ export const createBarManagerController = async (req: Request, res: Response): P
 
         res.status(201).json({ message: "Bar Manager created", user: newUser });
     } catch (err: unknown) {
-        const mappedError = mapErrorMsg((msg) => `Error deleting bar: ${msg}`, err);
+        const mappedError = mapErrorMsg((msg) => `Error creating a Bar Manager ${msg}`, err);
         console.error(mappedError);
         res.status(500).json({ message: mappedError instanceof Error ? mappedError.message : "Internal Server Error" });
     }

@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { IBar } from "../types/bar.types";
+import "./Item";
 
 
 const BarSchema = new Schema<IBar>(
