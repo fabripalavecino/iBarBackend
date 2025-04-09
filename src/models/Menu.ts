@@ -1,13 +1,12 @@
 import mongoose, { Document, Schema } from "mongoose";
-
-interface IMenu extends Document {
-    businessID: mongoose.Types.ObjectId;
+export interface IMenu extends Document {
+    barID: mongoose.Types.ObjectId;
     name: string;
     items: { itemID: mongoose.Types.ObjectId; quantity: number }[];
 }
 
 const MenuSchema = new Schema<IMenu>({
-    businessID: { type: Schema.Types.ObjectId, required: true, ref: "Business" },
+    barID: { type: Schema.Types.ObjectId, required: true, ref: "Bar" },
     name: { type: String, required: true },
     items: [
         {

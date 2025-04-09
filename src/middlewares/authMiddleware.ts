@@ -1,4 +1,3 @@
-// ✅ authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
@@ -7,6 +6,7 @@ interface JwtUserPayload {
   email: string;
   role: "barOwner" | "barManager";
   businessID: string;
+  barID?: string;
 }
 
 declare module "express-serve-static-core" {

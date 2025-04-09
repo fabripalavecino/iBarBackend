@@ -1,14 +1,6 @@
-import mongoose, { Document, Schema } from "mongoose";
-
-interface IItem extends Document {
-    barID: mongoose.Types.ObjectId;
-    businessID: mongoose.Types.ObjectId;
-    name: string;
-    price: number;
-    type: string;
-    quantity: number;
-    image: string;
-}
+// src/models/Item.ts
+import mongoose, { Schema } from "mongoose";
+import { IItem } from "../types/item.types";
 
 const ItemSchema = new Schema<IItem>({
     barID: { type: Schema.Types.ObjectId, required: true, ref: "Bar" },
