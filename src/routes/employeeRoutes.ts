@@ -1,8 +1,6 @@
 import { Router } from "express";
 import { createEmployeeController, deleteEmployeeController, getEmployeeByIdController, getEmployeesByBarController, updateEmployeeController } from "../controllers/employeeController";
-import { validateBarIDParam } from "../middlewares/validateBarIdParam";
-
-
+import { validateBarIDParam } from "../middlewares/validateBarIDParam";
 
 const router = Router({ mergeParams: true });
 router.use(validateBarIDParam);

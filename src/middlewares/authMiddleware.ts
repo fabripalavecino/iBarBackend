@@ -11,9 +11,10 @@ interface JwtUserPayload {
 
 declare module "express-serve-static-core" {
   interface Request {
-    user?: JwtUserPayload;
+    user: JwtUserPayload;
   }
 }
+
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers["authorization"];

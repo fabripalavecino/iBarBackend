@@ -3,7 +3,7 @@ import { body } from "express-validator";
 import { authenticateToken } from "../middlewares/authMiddleware";
 import { authorizeBusinessOwnership } from "../middlewares/authorizeBusinessOwnership";
 import { createItemController, getItemsController, getItemByIdController, updateItemController, deleteItemController } from "../controllers/itemController";
-import { validateBarIDParam } from "../middlewares/validateBarIdParam";
+import { validateBarIDParam } from "../middlewares/validateBarIDParam";
 
 const router = express.Router({ mergeParams: true });
 router.use(validateBarIDParam);
@@ -19,9 +19,9 @@ router.post(
     createItemController
 );
 
-router.get("/", authenticateToken, authorizeBusinessOwnership, getItemsController);
-router.get("/by-id/:id", authenticateToken, authorizeBusinessOwnership, getItemByIdController);
-router.put("/:id", authenticateToken, authorizeBusinessOwnership, updateItemController);
-router.delete("/:id", authenticateToken, authorizeBusinessOwnership, deleteItemController);
+router.get("/", getItemsController);
+router.get("/by-id/:id", getItemByIdController);
+router.put("/:id", updateItemController);
+router.delete("/:id", deleteItemController);
 
 export default router;

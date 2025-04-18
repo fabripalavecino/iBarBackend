@@ -3,6 +3,7 @@ import { validationResult } from "express-validator";
 import { mapErrorMsg } from "../utils/mapErrorMsg";
 import { createBar, getBars, getBarById, updateBar, deleteBar, createBarManager } from "../services/barService";
 import { BarRequest } from "../types/bar.types";
+import { RequestWithBarID } from "../types/request.types";
 
 export const createBarController = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -12,10 +13,13 @@ export const createBarController = async (req: Request, res: Response): Promise<
             return;
         }
 
-        const userId = req.user?.id;
+        const userId = req.user.id;
         if(!userId) throw new Error('UserId not found');
 
-        const data: BarRequest = req.body;
+        const data: BarRequest = {
+            ...req.body,
+            businessID: req.user.businessID
+        };
 
         if (!data.barLogo) {
             res.status(400).json({ message: "barLogo is required." });
@@ -46,16 +50,11 @@ export const getBarsController = async (req: Request, res: Response): Promise<vo
     }
 };
 
-export const getBarByIdController = async (req: Request, res: Response): Promise<void> => {
+export const getBarByIdController = async (req: RequestWithBarID, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const { barID } = req.params;
 
-        if (!id) {
-            res.status(400).json({ message: "Invalid ID" });
-            return;
-        }
-
-        const response = await getBarById(id);
+        const response = await getBarById(barID);
         res.status(200).json(response);
     } catch (error) {
         const mappedError = mapErrorMsg((msg) => `Error fetching bar: ${msg}`, error);
@@ -64,17 +63,12 @@ export const getBarByIdController = async (req: Request, res: Response): Promise
     }
 };
 
-export const updateBarController = async (req: Request, res: Response): Promise<void> => {
+export const updateBarController = async (req: RequestWithBarID, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const { barID } = req.params;
         const data: BarRequest = req.body;
 
-        if (!id) {
-            res.status(400).json({ message: "Invalid ID" });
-            return;
-        }
-
-        const response = await updateBar(id, data);
+        const response = await updateBar(barID, data);
         res.status(200).json(response);
     } catch (error) {
         const mappedError = mapErrorMsg((msg) => `Error updating bar: ${msg}`, error);
@@ -83,16 +77,11 @@ export const updateBarController = async (req: Request, res: Response): Promise<
     }
 };
 
-export const deleteBarController = async (req: Request, res: Response): Promise<void> => {
+export const deleteBarController = async (req: RequestWithBarID, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const { barID } = req.params;
 
-        if (!id) {
-            res.status(400).json({ message: "Invalid ID" });
-            return;
-        }
-
-        await deleteBar(id);
+        await deleteBar(barID);
         res.status(200).json({ message: "Bar deleted successfully." });
     } catch (error) {
         const mappedError = mapErrorMsg((msg) => `Error deleting bar: ${msg}`, error);
@@ -101,14 +90,9 @@ export const deleteBarController = async (req: Request, res: Response): Promise<
     }
 };
 
-export const createBarManagerController = async (req: Request, res: Response): Promise<void> => {
+export const createBarManagerController = async (req: RequestWithBarID, res: Response): Promise<void> => {
     try {
         const { barID } = req.params;
-
-        if (!barID) {
-            res.status(400).json({ message: "Missing barID in URL params" });
-            return;
-        }
 
         const { first, last, email, phoneNumber, password } = req.body;
 

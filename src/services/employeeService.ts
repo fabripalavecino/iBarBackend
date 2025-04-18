@@ -4,11 +4,13 @@ import { IEmployee } from "../types/employee.types";
 
 export const createEmployee = async (
   data: EmployeeRequest,
-  barID: string
+  barID: string,
+  businessID: string
 ): Promise<IEmployee> => {
   const newEmployee = new Employee({
     ...data,
     barID,
+    businessID
   });
   return await newEmployee.save();
 };

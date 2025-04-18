@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-interface IWorkReport extends Document {
+export interface IWorkReport extends Document {
     barID: mongoose.Types.ObjectId;
     businessID: mongoose.Types.ObjectId;
     client_id: mongoose.Types.ObjectId;
@@ -18,8 +18,8 @@ interface IWorkReport extends Document {
     revenue: number;
     drinksPayment: number;
     employeesPayment: number;
-    drinksList: mongoose.Types.ObjectId[];
-    cloneList: mongoose.Types.ObjectId[];
+    drinksList: mongoose.Types.ObjectId[]; // Item entity
+    cloneList: mongoose.Types.ObjectId[]; // clone from drinksList
 }
 
 const WorkReportSchema = new Schema<IWorkReport>({

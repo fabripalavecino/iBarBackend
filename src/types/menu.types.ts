@@ -1,5 +1,11 @@
 export interface MenuRequest {
     barID: string;
+    businessID: string;
     name: string;
-    items: { itemID: string; quantity: number }[];
-};
+    price: number;
+    drinksList: {
+      itemID: string;
+      quantity: number;
+    }[];
+  }
+  

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-interface ITask extends Document {
+export interface ITask extends Document {
     businessID: mongoose.Types.ObjectId;
     assignedTo: mongoose.Types.ObjectId;
     title: string;

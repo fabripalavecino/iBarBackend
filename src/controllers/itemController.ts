@@ -20,12 +20,7 @@ export const createItemController = async (req: RequestWithBarID, res: Response)
     }
 
     const barID = req.params.barID;
-    const businessID = req.user?.businessID;
-
-    if (!barID || !businessID) {
-      res.status(400).json({ message: "Missing barID or businessID from request context" });
-      return;
-    }
+    const businessID = req.user.businessID;
 
     const data: ItemRequest = {
       ...req.body,
@@ -81,18 +76,14 @@ export const getItemByIdController = async (req: RequestWithBarID, res: Response
 export const updateItemController = async (req: RequestWithBarID, res: Response) => {
   try {
     const { id } = req.params;
+    
     if (!id) {
       res.status(400).json({ message: "Item ID not provided" });
       return;
     }
 
     const barID = req.params.barID;
-    const businessID = req.user?.businessID;
-
-    if (!barID || !businessID) {
-      res.status(400).json({ message: "Missing barID or businessID from request context" });
-      return;
-    }
+    const businessID = req.user.businessID;
 
     const updated = await updateItem(id, { ...req.body, barID, businessID });
     if (!updated) {

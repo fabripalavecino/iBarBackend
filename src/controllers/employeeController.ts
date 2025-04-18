@@ -13,8 +13,9 @@ import { RequestWithBarID } from "../types/request.types";
 export const createEmployeeController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
     const { barID } = req.params;
+    const businessID = req.user.businessID;
     const data: EmployeeRequest = req.body;
-    const employee = await createEmployee(data, barID);
+    const employee = await createEmployee(data, barID, businessID);
     res.status(201).json(employee);
   } catch (error) {
     const mappedError = mapErrorMsg((msg) => `Error creating employee: ${msg}`, error);

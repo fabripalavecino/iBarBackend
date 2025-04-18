@@ -21,4 +21,5 @@ export interface PasswordResetRequest {
 export interface ResetPasswordPayload {
     token: string;
     newPassword: string;
+    userId: string;
 }

@@ -19,9 +19,10 @@ export const createMenuController = async (req: RequestWithBarID, res: Response)
     }
 
     const { barID } = req.params;
-    const { name, items } = req.body;
+    const { name, price, drinksList } = req.body;
+    const businessID = req.user.businessID;
 
-    const newMenu = await createMenu({ barID, name, items });
+    const newMenu = await createMenu({ name, price, drinksList, barID, businessID });
     res.status(201).json(newMenu);
   } catch (error) {
     const mappedError = mapErrorMsg((msg) => `Error creating menu: ${msg}`, error);
@@ -29,6 +30,7 @@ export const createMenuController = async (req: RequestWithBarID, res: Response)
     res.status(500).json({ message: mappedError instanceof Error ? mappedError.message : "Internal Server Error" });
   }
 };
+
 
 export const getMenusController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {

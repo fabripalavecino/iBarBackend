@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-interface IFile extends Document {
+export interface IFile extends Document {
     businessID: mongoose.Types.ObjectId;
     barID: mongoose.Types.ObjectId;
     fileName: string;

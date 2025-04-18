@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-interface IInventoryReport extends Document {
+export interface IInventoryReport extends Document {
     businessID: mongoose.Types.ObjectId;
     barID: mongoose.Types.ObjectId;
     reportDate: Date;

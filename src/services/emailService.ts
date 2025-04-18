@@ -8,9 +8,11 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 export const sendPasswordResetEmail = async (email: string, resetToken: string) => {
     const resetLink = `https://yourfrontend.com/reset-password?token=${resetToken}`;
 
+    const senderEmail = process.env.SENDGRID_FROM_EMAIL as string;
+    console.log(senderEmail);
     const msg = {
         to: email,
-        from: process.env.SENDGRID_FROM_EMAIL as string,
+        from: senderEmail,
         subject: "Password Reset Request",
         text: `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}`,
         html: `
@@ -20,6 +22,8 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string) 
             <p>If you did not request this, please ignore this email.</p>
         `,
     };
+
+    console.log("Final SendGrid Payload:", msg);
 
     try {
         await sgMail.send(msg);

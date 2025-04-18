@@ -13,6 +13,7 @@ import { isValidPassword } from "../utils/authValidation";
 import { sendPasswordResetEmail } from "./emailService";
 import PasswordResetToken from "../models/PasswordResetToken";
 import { randomBytes } from "crypto";
+import { hashToken } from "../utils/hashToken";
 
 export const registerUser = async (data: RegisterRequest) => {
   const {
@@ -91,49 +92,57 @@ export const loginUser = async (data: LoginRequest) => {
 
   await user.resetFailedLoginAttempts();
 
+  const token = generateToken(
+    user._id.toString(),
+    user.email,
+    user.userType,
+    user.businessID.toString(),
+    user.barID ? user.barID.toString() : undefined
+  );
+
   return {
-    token: generateToken(user._id.toString(),user.email, 'barOwner', user.businessID.toString()),
+    token,
     user: formatUserResponse(user),
   };
 };
 
 export const requestPasswordReset = async ({ email }: PasswordResetRequest) => {
-    const user = await User.findOne({ email });
-    if (!user) throw new Error("User not found");
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("User not found");
 
-    const resetToken = randomBytes(32).toString("hex");
-    const hashedToken = bcrypt.hashSync(resetToken, 12);
+  const rawToken = randomBytes(32).toString("hex");
+  const hashedToken = hashToken(rawToken);
 
-    await PasswordResetToken.create({
-        userId: user._id,
-        token: hashedToken,
-        expiresAt: new Date(Date.now() + 3600000), // 1 hour expiration
-    });
+  await PasswordResetToken.deleteMany({ userId: user._id });
 
-    await sendPasswordResetEmail(user.email, resetToken);
+  await PasswordResetToken.create({
+    userId: user._id,
+    token: hashedToken,
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+  });
+
+  await sendPasswordResetEmail(user.email, rawToken);
 };
 
 
-export const resetPassword = async ({
-  token,
-  newPassword,
-}: ResetPasswordPayload) => {
-  const resetRecord = await PasswordResetToken.findOne();
-  if (!resetRecord || !bcrypt.compareSync(token, resetRecord.token)) {
-    throw new Error("Invalid or expired token");
-  }
+export const resetPassword = async ({ token, newPassword, userId }: ResetPasswordPayload) => {
+  const hashedToken = hashToken(token);
 
-  if (!resetRecord || resetRecord.expiresAt < new Date()) {
-    throw new Error("Invalid or expired token");
-  }
+  const resetRecord = await PasswordResetToken.findOne({ userId, token: hashedToken });
+  if (!resetRecord) throw new Error("Invalid or expired token");
 
-  const user = await User.findById(resetRecord.userId);
+  const isTokenExpired = resetRecord.expiresAt < new Date();
+  if (isTokenExpired) throw new Error("Invalid or expired token");
+
+  const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
-  user.password = await bcrypt.hash(newPassword, 12);
+  user.password = newPassword;
   await user.save();
 
   await PasswordResetToken.deleteOne({ _id: resetRecord._id });
+
+  console.log("🔒 Password successfully reset");
 };
 
 //  Helper Functions
@@ -151,7 +160,10 @@ const formatUserResponse = (user: IUser) => ({
   email: user.email,
   phoneNumber: user.phoneNumber,
   businessID: user.businessID,
+  barID: user.barID,
+  userType: user.userType,
 });
+
 
 const ensureUserDoesNotExist = async (email: string) => {
   const existingUser = await User.findOne({ email });

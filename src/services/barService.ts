@@ -80,8 +80,9 @@ export const createBarManager = async ({
     const bar = await Bar.findById(barID);
     if (!bar) throw new Error("Bar not found");
 
-    const existingManager = await User.findOne({ barID: bar._id, userType: "barManager" });
-    if (existingManager) throw new Error("This bar already has a manager");
+    const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+    if (existingUser) throw new Error("User with this email or phone number already exists");
+
 
     const newUser = new User({
         first,

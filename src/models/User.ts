@@ -18,7 +18,7 @@ export interface IUser extends Document {
     resetFailedLoginAttempts(): Promise<void>;
 }
 
-const UserSchema = new Schema<IUser>({
+export const UserSchema = new Schema<IUser>({
     first: { type: String, required: true },
     last: { type: String, required: true },
     phoneNumber: { type: String, required: true, unique: true },
