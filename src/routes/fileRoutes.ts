@@ -8,9 +8,11 @@ import {
   updateFileController
 } from "../controllers/fileController";
 import { validateBarIDParam } from "../middlewares/validateBarIDParam";
+import { authenticateToken } from "../middlewares/authMiddleware";
+import { authorizeBusinessOwnership } from "../middlewares/authorizeBusinessOwnership";
 
 const router = express.Router({ mergeParams: true });
-router.use(validateBarIDParam);
+router.use(authenticateToken, authorizeBusinessOwnership, validateBarIDParam);
 
 router.post(
   "/",

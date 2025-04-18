@@ -6,7 +6,7 @@ import { createItemController, getItemsController, getItemByIdController, update
 import { validateBarIDParam } from "../middlewares/validateBarIDParam";
 
 const router = express.Router({ mergeParams: true });
-router.use(validateBarIDParam);
+router.use(authenticateToken, authorizeBusinessOwnership, validateBarIDParam);
 
 router.post(
     "/",
@@ -20,7 +20,7 @@ router.post(
 );
 
 router.get("/", getItemsController);
-router.get("/by-id/:id", getItemByIdController);
+router.get("/:id", getItemByIdController);
 router.put("/:id", updateItemController);
 router.delete("/:id", deleteItemController);
 
