@@ -2,11 +2,16 @@ import { Response } from "express";
 import { validationResult } from "express-validator";
 import { RequestWithBarID } from "../types/request.types";
 import { mapErrorMsg } from "../utils/mapErrorMsg";
-import { createShift, getShifts, getShiftById, updateShift, deleteShift } from "../services/shiftService";
+import {
+  createShift,
+  getShifts,
+  getShiftById,
+  updateShift,
+  deleteShift,
+} from "../services/shiftService";
 import { ShiftRequest } from "../types/shift.types";
 
-
-export const createShiftController = async (req: RequestWithBarID, res: Response) => {
+export const createShiftController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -17,13 +22,8 @@ export const createShiftController = async (req: RequestWithBarID, res: Response
     const { barID } = req.params;
     const businessID = req.user.businessID;
 
-    const shiftData: ShiftRequest = {
-      ...req.body,
-      barID,
-      businessID,
-    };
-
-    const created = await createShift(shiftData);
+    const data: ShiftRequest = { ...req.body, barID, businessID };
+    const created = await createShift(data);
     res.status(201).json(created);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error creating shift: ${msg}`, error);
@@ -32,7 +32,7 @@ export const createShiftController = async (req: RequestWithBarID, res: Response
   }
 };
 
-export const getShiftsController = async (req: RequestWithBarID, res: Response) => {
+export const getShiftsController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
     const { barID } = req.params;
     const shifts = await getShifts(barID);
@@ -44,19 +44,20 @@ export const getShiftsController = async (req: RequestWithBarID, res: Response) 
   }
 };
 
-export const getShiftByIdController = async (req: RequestWithBarID, res: Response) => {
+export const getShiftByIdController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
-    const { barID, id } = req.params;
+    const { id } = req.params;
     if (!id) {
-        res.status(400).json({ message: "Missing shift ID" });
-        return;
-      }
-    const shift = await getShiftById(id, barID);
+      res.status(400).json({ message: "Missing shift ID" });
+      return;
+    }
 
+    const shift = await getShiftById(id);
     if (!shift) {
       res.status(404).json({ message: "Shift not found" });
       return;
     }
+
     res.status(200).json(shift);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error fetching shift: ${msg}`, error);
@@ -65,19 +66,23 @@ export const getShiftByIdController = async (req: RequestWithBarID, res: Respons
   }
 };
 
-export const updateShiftController = async (req: RequestWithBarID, res: Response) => {
+export const updateShiftController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
-    const { barID, id } = req.params;
-    if (!id) {
-        res.status(400).json({ message: "Missing shift ID" });
-        return;
-      }
-    const updated = await updateShift(id, barID, req.body);
+    const { id } = req.params;
+    const barID = req.params.barID;
+    const businessID = req.user.businessID;
 
+    if (!id) {
+      res.status(400).json({ message: "Missing shift ID" });
+      return;
+    }
+
+    const updated = await updateShift(id, { ...req.body, barID, businessID });
     if (!updated) {
       res.status(404).json({ message: "Shift not found" });
       return;
     }
+
     res.status(200).json(updated);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error updating shift: ${msg}`, error);
@@ -86,20 +91,22 @@ export const updateShiftController = async (req: RequestWithBarID, res: Response
   }
 };
 
-export const deleteShiftController = async (req: RequestWithBarID, res: Response) => {
+export const deleteShiftController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
-    const { barID, id } = req.params;
-    if (!id) {
-        res.status(400).json({ message: "Missing shift ID" });
-        return;
-      }
-    const deleted = await deleteShift(id, barID);
+    const { id } = req.params;
 
+    if (!id) {
+      res.status(400).json({ message: "Missing shift ID" });
+      return;
+    }
+
+    const deleted = await deleteShift(id);
     if (!deleted) {
       res.status(404).json({ message: "Shift not found" });
       return;
     }
-    res.status(200).json({ message: "Shift deleted successfully" });
+
+    res.status(200).json({ message: "Shift deleted successfully." });
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error deleting shift: ${msg}`, error);
     console.error(mapped);

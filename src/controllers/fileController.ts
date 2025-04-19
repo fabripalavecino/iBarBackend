@@ -55,8 +55,8 @@ export const getFileByIdController = async (req: RequestWithBarID, res: Response
       return;
     }
 
-    const file = await getFileById(id, barID);
-    if (!file) {
+    const file = await getFileById(id);
+    if (!file || file.isDeleted) { 
       res.status(404).json({ message: "File not found" });
       return;
     }
@@ -72,10 +72,11 @@ export const updateFileController = async (req: RequestWithBarID, res: Response)
   try {
     const { id, barID } = req.params;
     if (!id) {
-        res.status(400).json({ message: "File ID not provided" });
-        return;
+      res.status(400).json({ message: "File ID not provided" });
+      return;
     }
-    const updated = await updateFile(id, barID, req.body);
+
+    const updated = await updateFile(id, req.body);
 
     if (!updated) {
       res.status(404).json({ message: "File not found" });
@@ -93,10 +94,11 @@ export const deleteFileController = async (req: RequestWithBarID, res: Response)
   try {
     const { id, barID } = req.params;
     if (!id) {
-        res.status(400).json({ message: "File ID not provided" });
-        return;
+      res.status(400).json({ message: "File ID not provided" });
+      return;
     }
-    const deleted = await deleteFile(id, barID);
+
+    const deleted = await deleteFile(id);
 
     if (!deleted) {
       res.status(404).json({ message: "File not found" });

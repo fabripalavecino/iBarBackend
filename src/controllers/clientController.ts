@@ -3,7 +3,13 @@ import { validationResult } from "express-validator";
 import { mapErrorMsg } from "../utils/mapErrorMsg";
 import { RequestWithBarID } from "../types/request.types";
 import { ClientRequest } from "../types/client.types";
-import { createClient, getClients, getClientById, updateClient, deleteClient } from "../services/clientService";
+import {
+  createClient,
+  getClients,
+  getClientById,
+  updateClient,
+  deleteClient
+} from "../services/clientService";
 
 export const createClientController = async (req: RequestWithBarID, res: Response) => {
   try {
@@ -45,13 +51,14 @@ export const getClientsController = async (req: RequestWithBarID, res: Response)
 
 export const getClientByIdController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { id, barID } = req.params;
+    const { id } = req.params;
+
     if (!id) {
       res.status(400).json({ message: "Missing client ID" });
       return;
     }
 
-    const client = await getClientById(id, barID);
+    const client = await getClientById(id);
     if (!client) {
       res.status(404).json({ message: "Client not found" });
       return;
@@ -67,13 +74,14 @@ export const getClientByIdController = async (req: RequestWithBarID, res: Respon
 
 export const updateClientController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { id, barID } = req.params;
+    const { id } = req.params;
+
     if (!id) {
       res.status(400).json({ message: "Missing client ID" });
       return;
     }
 
-    const updated = await updateClient(id, barID, req.body);
+    const updated = await updateClient(id, req.body);
     if (!updated) {
       res.status(404).json({ message: "Client not found" });
       return;
@@ -89,13 +97,14 @@ export const updateClientController = async (req: RequestWithBarID, res: Respons
 
 export const deleteClientController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { id, barID } = req.params;
+    const { id } = req.params;
+
     if (!id) {
       res.status(400).json({ message: "Missing client ID" });
       return;
     }
 
-    const deleted = await deleteClient(id, barID);
+    const deleted = await deleteClient(id);
     if (!deleted) {
       res.status(404).json({ message: "Client not found" });
       return;

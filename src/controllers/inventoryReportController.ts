@@ -1,6 +1,5 @@
 import { Response } from "express";
 import { validationResult } from "express-validator";
-import { RequestWithBarID } from "../types/request.types";
 import { mapErrorMsg } from "../utils/mapErrorMsg";
 import {
   createInventoryReport,
@@ -10,6 +9,7 @@ import {
   deleteInventoryReport,
 } from "../services/inventoryReportService";
 import { InventoryReportRequest } from "../types/inventoryReport.types";
+import { RequestWithBarID } from "../types/request.types";
 
 export const createInventoryReportController = async (req: RequestWithBarID, res: Response) => {
   try {
@@ -19,44 +19,50 @@ export const createInventoryReportController = async (req: RequestWithBarID, res
       return;
     }
 
-    const businessID = req.user.businessID;
     const barID = req.params.barID;
+    const businessID = req.user.businessID;
 
-    const reportData: InventoryReportRequest = {
+    const data: InventoryReportRequest = {
       ...req.body,
-      businessID,
       barID,
+      businessID,
     };
 
-    const report = await createInventoryReport(reportData);
-    res.status(201).json(report);
+    const newReport = await createInventoryReport(data);
+    res.status(201).json(newReport);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error creating inventory report: ${msg}`, error);
+    console.error(mapped);
     res.status(500).json({ message: mapped instanceof Error ? mapped.message : "Internal Server Error" });
   }
 };
 
 export const getInventoryReportsController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { barID } = req.params;
+    const barID = req.params.barID;
+    if (!barID) {
+      res.status(400).json({ message: "Missing barID in URL params" });
+      return;
+    }
+
     const reports = await getInventoryReports(barID);
     res.status(200).json(reports);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error fetching inventory reports: ${msg}`, error);
+    console.error(mapped);
     res.status(500).json({ message: mapped instanceof Error ? mapped.message : "Internal Server Error" });
   }
 };
 
 export const getInventoryReportByIdController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { id, barID } = req.params;
-
+    const { id } = req.params;
     if (!id) {
-      res.status(400).json({ message: "Missing inventory report ID" });
+      res.status(400).json({ message: "Missing inventory report ID in URL params" });
       return;
     }
 
-    const report = await getInventoryReportById(id, barID);
+    const report = await getInventoryReportById(id);
     if (!report) {
       res.status(404).json({ message: "Inventory report not found" });
       return;
@@ -65,18 +71,27 @@ export const getInventoryReportByIdController = async (req: RequestWithBarID, re
     res.status(200).json(report);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error fetching inventory report: ${msg}`, error);
+    console.error(mapped);
     res.status(500).json({ message: mapped instanceof Error ? mapped.message : "Internal Server Error" });
   }
 };
 
 export const updateInventoryReportController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { id, barID } = req.params;
+    const { id } = req.params;
     if (!id) {
-        res.status(400).json({ message: "InventoryReport ID not provided" });
-        return;
+      res.status(400).json({ message: "Inventory report ID not provided" });
+      return;
     }
-    const updated = await updateInventoryReport(id, barID, req.body);
+
+    const barID = req.params.barID;
+    const businessID = req.user.businessID;
+
+    const updated = await updateInventoryReport(id, {
+      ...req.body,
+      barID,
+      businessID,
+    });
 
     if (!updated) {
       res.status(404).json({ message: "Inventory report not found" });
@@ -86,19 +101,20 @@ export const updateInventoryReportController = async (req: RequestWithBarID, res
     res.status(200).json(updated);
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error updating inventory report: ${msg}`, error);
+    console.error(mapped);
     res.status(500).json({ message: mapped instanceof Error ? mapped.message : "Internal Server Error" });
   }
 };
 
 export const deleteInventoryReportController = async (req: RequestWithBarID, res: Response) => {
   try {
-    const { id, barID } = req.params;
+    const { id } = req.params;
     if (!id) {
-        res.status(400).json({ message: "InventoryReport ID not provided" });
-        return;
+      res.status(400).json({ message: "Inventory report ID not provided" });
+      return;
     }
-    const deleted = await deleteInventoryReport(id, barID);
 
+    const deleted = await deleteInventoryReport(id);
     if (!deleted) {
       res.status(404).json({ message: "Inventory report not found" });
       return;
@@ -107,6 +123,7 @@ export const deleteInventoryReportController = async (req: RequestWithBarID, res
     res.status(200).json({ message: "Inventory report deleted successfully." });
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error deleting inventory report: ${msg}`, error);
+    console.error(mapped);
     res.status(500).json({ message: mapped instanceof Error ? mapped.message : "Internal Server Error" });
   }
 };

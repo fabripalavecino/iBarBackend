@@ -9,6 +9,7 @@ export interface IItem extends mongoose.Document {
     type: string;
     quantity: number;
     image: string;
+    isDeleted?: boolean;
 }
 
 export interface ItemRequest {

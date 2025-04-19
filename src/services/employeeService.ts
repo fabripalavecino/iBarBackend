@@ -1,44 +1,22 @@
 import Employee from "../models/Employee";
 import { EmployeeRequest } from "../types/employee.types";
-import { IEmployee } from "../types/employee.types";
 
-export const createEmployee = async (
-  data: EmployeeRequest,
-  barID: string,
-  businessID: string
-): Promise<IEmployee> => {
-  const newEmployee = new Employee({
-    ...data,
-    barID,
-    businessID
-  });
-  return await newEmployee.save();
+export const createEmployee = async (data: EmployeeRequest) => {
+  return await Employee.create(data);
 };
 
-export const getEmployeesByBar = async (
-  barID: string
-): Promise<IEmployee[]> => {
-  return await Employee.find({ barID });
+export const getEmployees = async (barID: string) => {
+  return await Employee.find({ barID, isDeleted: false });
 };
 
-export const getEmployeeById = async (
-  id: string,
-  barID: string
-): Promise<IEmployee | null> => {
-  return await Employee.findOne({ _id: id, barID });
+export const getEmployeeById = async (id: string) => {
+  return await Employee.findOne({ _id: id, isDeleted: false });
 };
 
-export const updateEmployee = async (
-  id: string,
-  data: EmployeeRequest,
-  barID: string
-): Promise<IEmployee | null> => {
-  return await Employee.findOneAndUpdate({ _id: id, barID }, data, { new: true });
+export const updateEmployee = async (id: string, data: Partial<EmployeeRequest>) => {
+  return await Employee.findByIdAndUpdate(id, data, { new: true });
 };
 
-export const deleteEmployee = async (
-  id: string,
-  barID: string
-): Promise<void> => {
-  await Employee.findOneAndDelete({ _id: id, barID });
+export const deleteEmployee = async (id: string) => {
+  return await Employee.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
 };

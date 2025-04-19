@@ -1,13 +1,17 @@
-// src/controllers/workReportController.ts
 import { Response } from "express";
 import { validationResult } from "express-validator";
 import { mapErrorMsg } from "../utils/mapErrorMsg";
 import { RequestWithBarID } from "../types/request.types";
 import { WorkReportRequest } from "../types/workReport.types";
-import { createWorkReport, getWorkReports, getWorkReportById, updateWorkReport, deleteWorkReport } from "../services/workReportService";
+import {
+  createWorkReport,
+  getWorkReports,
+  getWorkReportById,
+  updateWorkReport,
+  deleteWorkReport,
+} from "../services/workReportService";
 
-
-export const createWorkReportController = async (req: RequestWithBarID, res: Response) => {
+export const createWorkReportController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -18,12 +22,7 @@ export const createWorkReportController = async (req: RequestWithBarID, res: Res
     const barID = req.params.barID;
     const businessID = req.user.businessID;
 
-    const data: WorkReportRequest = {
-      ...req.body,
-      barID,
-      businessID,
-    };
-
+    const data: WorkReportRequest = { ...req.body, barID, businessID };
     const report = await createWorkReport(data);
     res.status(201).json(report);
   } catch (error) {
@@ -33,7 +32,7 @@ export const createWorkReportController = async (req: RequestWithBarID, res: Res
   }
 };
 
-export const getWorkReportsController = async (req: RequestWithBarID, res: Response) => {
+export const getWorkReportsController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
     const { barID } = req.params;
     const reports = await getWorkReports(barID);
@@ -45,15 +44,15 @@ export const getWorkReportsController = async (req: RequestWithBarID, res: Respo
   }
 };
 
-export const getWorkReportByIdController = async (req: RequestWithBarID, res: Response) => {
+export const getWorkReportByIdController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
-    const { id, barID } = req.params;
+    const { id } = req.params;
     if (!id) {
       res.status(400).json({ message: "Missing report ID" });
       return;
     }
 
-    const report = await getWorkReportById(id, barID);
+    const report = await getWorkReportById(id);
     if (!report) {
       res.status(404).json({ message: "Work report not found" });
       return;
@@ -67,17 +66,15 @@ export const getWorkReportByIdController = async (req: RequestWithBarID, res: Re
   }
 };
 
-export const updateWorkReportController = async (req: RequestWithBarID, res: Response) => {
+export const updateWorkReportController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
-    const { id, barID } = req.params;
-    const businessID = req.user?.businessID;
-
-    if (!id || !barID || !businessID) {
-      res.status(400).json({ message: "Missing required context (id, barID, businessID)" });
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ message: "Missing report ID" });
       return;
     }
+    const updated = await updateWorkReport(id, req.body);
 
-    const updated = await updateWorkReport(id, barID, req.body);
     if (!updated) {
       res.status(404).json({ message: "Work report not found" });
       return;
@@ -91,17 +88,21 @@ export const updateWorkReportController = async (req: RequestWithBarID, res: Res
   }
 };
 
-export const deleteWorkReportController = async (req: RequestWithBarID, res: Response) => {
+export const deleteWorkReportController = async (req: RequestWithBarID, res: Response): Promise<void> => {
   try {
-    const { id, barID } = req.params;
-    const businessID = req.user?.businessID;
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ message: "Missing report ID" });
+      return;
+    }
+    const deleted = await deleteWorkReport(id);
 
-    if (!id || !barID || !businessID) {
-      res.status(400).json({ message: "Missing required context (id, barID, businessID)" });
+
+    if (!deleted) {
+      res.status(404).json({ message: "Work report not found" });
       return;
     }
 
-    await deleteWorkReport(id, barID);
     res.status(200).json({ message: "Work report deleted successfully." });
   } catch (error) {
     const mapped = mapErrorMsg((msg) => `Error deleting work report: ${msg}`, error);

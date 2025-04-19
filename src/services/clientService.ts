@@ -1,26 +1,28 @@
-import Client from "../models/Client";
+import Client, { IClient } from "../models/Client";
 import { ClientRequest } from "../types/client.types";
 
 export const createClient = async (data: ClientRequest) => {
   return await Client.create(data);
 };
 
-export const getClients = async (barID: string) => {
-  return await Client.find({ barID });
+export const getClients = async (barID: string): Promise<IClient[]> => {
+  return await Client.find({ barID, isDeleted: false });
 };
 
-export const getClientById = async (id: string, barID: string) => {
-  return await Client.findOne({ _id: id, barID });
+export const getClientById = async (id: string): Promise<IClient | null> => {
+  return await Client.findOne({ _id: id, isDeleted: false });
 };
 
-export const updateClient = async (
-  id: string,
-  barID: string,
-  data: Partial<ClientRequest>
-) => {
-  return await Client.findOneAndUpdate({ _id: id, barID }, data, { new: true });
+
+export const updateClient = async (id: string, data: Partial<ClientRequest>) => {
+  return await Client.findByIdAndUpdate(
+    { _id: id, isDeleted: false },
+    data,
+    { new: true }
+  );
 };
 
-export const deleteClient = async (id: string, barID: string) => {
-  return await Client.findOneAndDelete({ _id: id, barID });
+export const deleteClient = async (id: string): Promise<IClient | null> => {
+  return await Client.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
 };
+

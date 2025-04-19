@@ -6,21 +6,17 @@ export const createMenu = async (data: MenuRequest) => {
 };
 
 export const getMenus = async (barID: string) => {
-  return await Menu.find({ barID });
+  return await Menu.find({ barID, isDeleted: false });
 };
 
-export const getMenuById = async (id: string, barID: string) => {
-  return await Menu.findOne({ _id: id, barID });
+export const getMenuById = async (id: string) => {
+  return await Menu.findOne({ _id: id, isDeleted: false });
 };
 
-export const updateMenu = async (
-  id: string,
-  barID: string,
-  data: Partial<MenuRequest>
-) => {
-  return await Menu.findOneAndUpdate({ _id: id, barID }, data, { new: true });
+export const updateMenu = async (id: string, data: Partial<MenuRequest>) => {
+  return await Menu.findOneAndUpdate({ _id: id, isDeleted: false }, data, { new: true });
 };
 
-export const deleteMenu = async (id: string, barID: string) => {
-  return await Menu.findOneAndDelete({ _id: id, barID });
+export const deleteMenu = async (id: string) => {
+  return await Menu.findOneAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true }, { new: true });
 };

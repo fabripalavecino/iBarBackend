@@ -6,21 +6,25 @@ export const createInventoryReport = async (data: InventoryReportRequest) => {
 };
 
 export const getInventoryReports = async (barID: string) => {
-  return await InventoryReport.find({ barID });
+  return await InventoryReport.find({ barID, isDeleted: false });
 };
 
-export const getInventoryReportById = async (id: string, barID: string) => {
-  return await InventoryReport.findOne({ _id: id, barID });
+export const getInventoryReportById = async (id: string) => {
+  return await InventoryReport.findOne({ _id: id, isDeleted: false });
 };
 
-export const updateInventoryReport = async (
-  id: string,
-  barID: string,
-  data: Partial<InventoryReportRequest>
-) => {
-  return await InventoryReport.findOneAndUpdate({ _id: id, barID }, data, { new: true });
+export const updateInventoryReport = async (id: string, data: Partial<InventoryReportRequest>) => {
+  return await InventoryReport.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    data,
+    { new: true }
+  );
 };
 
-export const deleteInventoryReport = async (id: string, barID: string) => {
-  return await InventoryReport.findOneAndDelete({ _id: id, barID });
+export const deleteInventoryReport = async (id: string) => {
+  return await InventoryReport.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    { isDeleted: true },
+    { new: true }
+  );
 };

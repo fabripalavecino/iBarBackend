@@ -1,15 +1,5 @@
-import mongoose, { Document, Schema } from "mongoose";
-
-export interface IMenu extends Document {
-  barID: mongoose.Types.ObjectId;
-  businessID: mongoose.Types.ObjectId;
-  name: string;
-  price: number;
-  drinksList: {
-    itemID: mongoose.Types.ObjectId;
-    quantity: number;
-  }[];
-}
+import mongoose, { Schema } from "mongoose";
+import { IMenu } from "../types/menu.types";
 
 const MenuSchema = new Schema<IMenu>({
   barID: { type: Schema.Types.ObjectId, required: true, ref: "Bar" },
@@ -22,6 +12,10 @@ const MenuSchema = new Schema<IMenu>({
       quantity: { type: Number, required: true },
     },
   ],
+  isDeleted: { type: Boolean, default: false },
 });
+
+// 🔹 Optional: Add index for performance on queries
+MenuSchema.index({ isDeleted: 1 });
 
 export default mongoose.model<IMenu>("Menu", MenuSchema);
