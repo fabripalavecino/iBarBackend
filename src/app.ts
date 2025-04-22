@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/authRoutes";
 import barRoutes from "./routes/barRoutes";
 import userRoutes from "./routes/userRoutes";
+import businessRoutes from "./routes/businessRoutes";
 
 
 const app = express();
@@ -19,5 +20,6 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })); // Rate limiting
 app.use("/api/auth", authRoutes);
 app.use("/api/bars", barRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/businesses", businessRoutes); 
 
 export default app;

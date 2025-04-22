@@ -1,49 +1,52 @@
-// src/services/userService.ts
-import User from "../models/User";
+import User, { IUser } from "../models/User";
 import { UserUpdateRequest } from "../types/user.types";
+import { FilterQuery } from "mongoose";
 
 export const getUsers = async ({
-    page,
-    limit,
-    search,
-  }: {
-    page: number;
-    limit: number;
-    search: string;
-  }) => {
-    const query = search
-      ? {
-          $or: [
-            { first: new RegExp(search, "i") },
-            { last: new RegExp(search, "i") },
-            { email: new RegExp(search, "i") },
-          ],
-        }
-      : {};
-  
-    const users = await User.find(query)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .select("-password"); // optional: exclude password
-  
-    const total = await User.countDocuments(query);
-  
-    return {
-      users,
-      total,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-    };
-  };
-  
-export const getUserById = async (id: string) => {
-  return await User.findById(id).select("-password");
+  page,
+  limit,
+  search,
+}: {
+  page: number;
+  limit: number;
+  search: string;
+}) => {
+  const query: FilterQuery<IUser> = { isDeleted: false };
+
+  if (search) {
+    query.$or = [
+      { email: { $regex: search, $options: "i" } },
+      { phoneNumber: { $regex: search, $options: "i" } },
+      { first: { $regex: search, $options: "i" } },
+      { last: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const users = await User.find(query)
+    .select("-password")
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  const total = await User.countDocuments(query);
+  return { users, total, page, limit };
 };
 
-export const updateUser = async (id: string, data: UserUpdateRequest) => {
-  return await User.findByIdAndUpdate(id, data, { new: true });
+export const getUserById = async (id: string) => {
+  return await User.findOne({ _id: id, isDeleted: false }).select("-password");;
+};
+
+export const updateUser = async (id: string, data: Partial<UserUpdateRequest>) => {
+  return await User.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    data,
+    { new: true }
+  );
 };
 
 export const deleteUser = async (id: string) => {
-  return await User.findByIdAndDelete(id);
+  return await User.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    { isDeleted: true },
+    { new: true }
+  );
 };

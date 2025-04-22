@@ -13,6 +13,7 @@ export interface IUser extends Document {
     barID?: mongoose.Types.ObjectId;
     failedLoginAttempts: number;
     lockUntil: Date | null;
+    isDeleted: boolean;
     comparePassword(candidatePassword: string): Promise<boolean>;
     incrementFailedLoginAttempts(): Promise<void>;
     resetFailedLoginAttempts(): Promise<void>;
@@ -34,7 +35,8 @@ export const UserSchema = new Schema<IUser>({
         }
     },
     failedLoginAttempts: { type: Number, default: 0 },
-    lockUntil: { type: Date, default: null }
+    lockUntil: { type: Date, default: null },
+    isDeleted: { type: Boolean, default: false },
 });
 
 
@@ -74,5 +76,7 @@ UserSchema.index(
         partialFilterExpression: { userType: "barManager" }
     }
 );
+
+UserSchema.index({ isDeleted: 1 });
 
 export default mongoose.model<IUser>("User", UserSchema);

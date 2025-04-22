@@ -23,9 +23,9 @@ const router = express.Router();
 
 router.post("/", authenticateToken, authorizeBusinessOwnership, createBarController);
 router.get("/", authenticateToken, authorizeBusinessOwnership, getBarsController);
-router.get("/:id", authenticateToken, authorizeBusinessOwnership, getBarByIdController);
-router.put("/:id", authenticateToken, authorizeBusinessOwnership, updateBarController);
-router.delete("/:id", authenticateToken, authorizeBusinessOwnership, deleteBarController);
+router.get("/:barID", authenticateToken, authorizeBusinessOwnership, getBarByIdController);
+router.put("/:barID", authenticateToken, authorizeBusinessOwnership, updateBarController);
+router.delete("/:barID", authenticateToken, authorizeBusinessOwnership, deleteBarController);
 router.post("/:barID/manager", authenticateToken, authorizeBusinessOwnership, createBarManagerController);
 
 router.use("/:barID/employees", employeeRoutes);

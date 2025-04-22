@@ -4,97 +4,94 @@ import Business from "../models/Business";
 import User, { IUser } from "../models/User";
 
 export const createBar = async (data: BarRequest, userId: string): Promise<IBar> => {
-    if (!data.name || !data.barLogo) {
-        throw new Error("Both 'name' and 'barLogo' are required.");
-    }
+  if (!data.name || !data.barLogo) {
+    throw new Error("Both 'name' and 'barLogo' are required.");
+  }
 
-    const business = await Business.findOne({ _id: data.businessID, owner_id: userId });
-    if (!business) {
-        throw new Error("Invalid business ID or unauthorized access to business.");
-    }
+  const business = await Business.findOne({ _id: data.businessID, owner_id: userId });
+  if (!business) {
+    throw new Error("Invalid business ID or unauthorized access to business.");
+  }
 
-    const newBar = new Bar({
-        name: data.name,
-        businessID: data.businessID,
-        barLogo: data.barLogo,
-        drinksList: [],
-        isDeleted: false,
-    });
+  const newBar = new Bar({
+    name: data.name,
+    businessID: data.businessID,
+    barLogo: data.barLogo,
+    drinksList: [],
+  });
 
-    return await newBar.save();
+  return await newBar.save();
 };
 
 export const getBars = async ({ page, limit, search }: { page: number; limit: number; search: string }) => {
-    const query = { isDeleted: false } as any;
+  const query = { isDeleted: false } as any;
 
-    if (search) {
-        query.$or = [
-            { name: { $regex: search, $options: "i" } },
-        ];
-    }
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+    ];
+  }
 
-    const bars = await Bar.find(query)
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .exec();
+  const bars = await Bar.find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .exec();
 
-    const total = await Bar.countDocuments(query);
-    return { bars, total, page, limit };
+  const total = await Bar.countDocuments(query);
+  return { bars, total, page, limit };
 };
 
 export const getBarById = async (id: string): Promise<IBar | null> => {
-    return await Bar.findById(id).populate("drinksList");
+  return await Bar.findOne({ _id: id, isDeleted: false }).populate("drinksList");
 };
 
 export const updateBar = async (id: string, data: Partial<BarRequest>): Promise<IBar | null> => {
-    return await Bar.findByIdAndUpdate(id, data, { new: true });
+  return await Bar.findOneAndUpdate({ _id: id, isDeleted: false }, data, { new: true });
 };
 
 export const deleteBar = async (id: string): Promise<void> => {
-    await Bar.findByIdAndUpdate(id, { isDeleted: true });
+  await Bar.findOneAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true });
 };
 
 export const addItemToBar = async (barId: string, itemId: string): Promise<IBar | null> => {
-    return await Bar.findByIdAndUpdate(
-        barId,
-        { $push: { drinksList: itemId } },
-        { new: true }
-    ).populate("drinksList");
+  return await Bar.findOneAndUpdate(
+    { _id: barId, isDeleted: false },
+    { $push: { drinksList: itemId } },
+    { new: true }
+  ).populate("drinksList");
 };
 
 export const createBarManager = async ({
+  first,
+  last,
+  email,
+  phoneNumber,
+  password,
+  barID
+}: {
+  first: string;
+  last: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  barID: string;
+}): Promise<IUser> => {
+  const bar = await Bar.findOne({ _id: barID, isDeleted: false });
+  if (!bar) throw new Error("Bar not found");
+
+  const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+  if (existingUser) throw new Error("User with this email or phone number already exists");
+
+  const newUser = new User({
     first,
     last,
     email,
     phoneNumber,
     password,
-    barID
-}: {
-    first: string;
-    last: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-    barID: string;
-}): Promise<IUser> => {
-    const bar = await Bar.findById(barID);
-    if (!bar) throw new Error("Bar not found");
+    userType: "barManager",
+    businessID: bar.businessID,
+    barID: bar._id
+  });
 
-    const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
-    if (existingUser) throw new Error("User with this email or phone number already exists");
-
-
-    const newUser = new User({
-        first,
-        last,
-        email,
-        phoneNumber,
-        password,
-        userType: "barManager",
-        businessID: bar.businessID,
-        barID: bar._id
-    });
-
-    return await newUser.save();
+  return await newUser.save();
 };
-

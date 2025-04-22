@@ -53,7 +53,6 @@ export const getBarsController = async (req: Request, res: Response): Promise<vo
 export const getBarByIdController = async (req: RequestWithBarID, res: Response): Promise<void> => {
     try {
         const { barID } = req.params;
-
         const response = await getBarById(barID);
         res.status(200).json(response);
     } catch (error) {
@@ -105,7 +104,9 @@ export const createBarManagerController = async (req: RequestWithBarID, res: Res
             barID
         });
 
-        res.status(201).json({ message: "Bar Manager created", user: newUser });
+        const { password: _, ...userWithoutPassword } = newUser.toObject();
+
+        res.status(201).json({ message: "Bar Manager created", user: userWithoutPassword });
     } catch (err: unknown) {
         const mappedError = mapErrorMsg((msg) => `Error creating a Bar Manager ${msg}`, err);
         console.error(mappedError);

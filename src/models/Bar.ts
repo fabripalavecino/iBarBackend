@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IBar } from "../types/bar.types";
 import "./Item";
 
@@ -13,5 +13,7 @@ const BarSchema = new Schema<IBar>(
     },
     { timestamps: true }
 );
+
+BarSchema.index({ isDeleted: 1 });
 
 export default mongoose.model<IBar>("Bar", BarSchema);
