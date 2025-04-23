@@ -6,7 +6,8 @@ dotenv.config();
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 
 export const sendPasswordResetEmail = async (email: string, resetToken: string) => {
-    const resetLink = `https://yourfrontend.com/reset-password?token=${resetToken}`;
+    const frontendUrl = process.env.FRONTEND_URL as string;
+    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
     const senderEmail = process.env.SENDGRID_FROM_EMAIL as string;
     console.log(senderEmail);
