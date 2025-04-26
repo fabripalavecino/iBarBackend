@@ -8,6 +8,9 @@ RUN npm install --production
 
 COPY . .
 
+# Compile TypeScript
+RUN npm run compile
+
 EXPOSE 5000
 
-CMD ["npm", "start"]
+CMD ["node", "dist/server.js"]
