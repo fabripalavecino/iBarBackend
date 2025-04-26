@@ -1,12 +1,11 @@
 # Stage 1: Build
-FROM node:18-alpine as builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
 
-
-ENV NODE_ENV=development
+# Install ALL deps (dev+prod)
 RUN npm install
 
 COPY . .
@@ -20,7 +19,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-ENV NODE_ENV=production
 RUN npm install --production
 
 COPY --from=builder /app/dist ./dist
